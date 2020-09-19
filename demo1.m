@@ -1,16 +1,16 @@
 % Demo 1: Just in test stage at this point...
 
-sz = [400 400 400];
+sz = [200 200 200];
 ranks = 5*ones(size(sz));
-noise = 1e-1;
-target_acc = 1.02;
+noise = 0;
+target_acc = 1.2;
 no_trials = 10;
 
-X = generate_low_rank_tensor(sz, ranks+5, noise);
+X = generate_low_rank_tensor(sz, ranks, noise);
 
 %% TR-ALS
 
-no_it = 2*17;
+no_it = 2*10;
 
 tic; cores1 = tr_als(X, ranks, 'tol', 0, 'maxiters', no_it, 'verbose', true); time_1 = toc;
 Y = cores_2_tensor(cores1);
@@ -55,3 +55,12 @@ while true
     end
     K = K + K_inc;
 end
+
+%% Randomized TR-SVD (Ahmadi-Asl et al., 2020)
+svd_ranks = ranks;
+oversamp = 50;
+tic;
+cores4 = tr_svd_rand(X, svd_ranks, oversamp);
+time_4 = toc;
+Y = cores_2_tensor(cores4);
+acc_4 = norm(Y(:) - X(:))/norm(X(:));
