@@ -1,8 +1,8 @@
 % Demo 1: Just in test stage at this point...
 
-sz = [200 200 200];
-ranks = 5*ones(size(sz));
-noise = 0;
+sz = [500 500 500];
+ranks = 10*ones(size(sz));
+noise = 1e-1;
 target_acc = 1.2;
 no_trials = 10;
 
@@ -10,7 +10,7 @@ X = generate_low_rank_tensor(sz, ranks, noise);
 
 %% TR-ALS
 
-no_it = 2*10;
+no_it = 2*14;
 
 tic; cores1 = tr_als(X, ranks, 'tol', 0, 'maxiters', no_it, 'verbose', true); time_1 = toc;
 Y = cores_2_tensor(cores1);
