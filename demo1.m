@@ -6,7 +6,7 @@ noise = 1e-1;
 target_acc = 1.2;
 no_trials = 10;
 
-X = generate_low_rank_tensor(sz, ranks, noise);
+X = generate_low_rank_tensor(sz, ranks, noise, 'large_elem', 20);
 
 %% TR-ALS
 

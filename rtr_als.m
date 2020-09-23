@@ -1,4 +1,4 @@
-function cores = rTRD(X, ranks, embedding_dims, varargin)
+function cores = rtr_als(X, ranks, embedding_dims, varargin)
 %rTRD Projection based randomized tensor ring decomposition
 %
 %cores = rTRD(X, ranks, embedding_dims, varargin) computes a tensor ring

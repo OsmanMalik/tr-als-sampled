@@ -1,4 +1,4 @@
-function cores = tr_als(X, ranks, varargin)
+function [cores, it] = tr_als(X, ranks, varargin)
 %tr_als Compute tensor ring decomposition via alternating least squares
 %
 %cores = tr_als(X, ranks) computes a tensor ring (TR) decomposition of the

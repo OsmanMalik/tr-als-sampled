@@ -3,6 +3,10 @@
 % https://www.mathworks.com/matlabcentral/fileexchange/25977-mtimesx-fast-matrix-multiply-with-multi-dimensional-support?s_tid=answers_rc2-2_p5_MLT
 % for details. Copy this into the folder containing all the other code and
 % execute.
+%
+% For compilation on Linux, I had to use the following commands instead:
+% >> blas_lib = '/usr/local/MATLAB/R2017a/bin/glnxa64/libmwblas.so'
+% >> mex('-DDEFINEUNIX','-largeArrayDims', 'mtimesx.c',blas_lib)
 
 libdir = 'mingw64';
 comp = computer;
