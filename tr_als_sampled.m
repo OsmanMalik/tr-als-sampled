@@ -33,6 +33,7 @@ mtimesx('SPEED');
 
 % Optional inputs
 params = inputParser;
+addParameter(params, 'conv_crit', 'relative error');
 addParameter(params, 'tol', 1e-3, @isscalar);
 addParameter(params, 'maxiters', 50, @(x) isscalar(x) & x > 0);
 addParameter(params, 'resample', true, @isscalar);
@@ -40,12 +41,12 @@ addParameter(params, 'verbose', false, @isscalar);
 addParameter(params, 'no_mat_inc', false);
 parse(params, varargin{:});
 
+conv_crit = params.Results.conv_crit;
 tol = params.Results.tol;
 maxiters = params.Results.maxiters;
 resample = params.Results.resample;
 verbose = params.Results.verbose;
 no_mat_inc = params.Results.no_mat_inc;
-
 
 % Check if X is path to mat file on disk
 %   X_mat_flag is a flag that keeps track of if X is an array or path to
@@ -112,11 +113,12 @@ end
 
 er_old = Inf;
 for it = 1:maxiters
+    
+    % Inner for loop
     for n = 1:N
         
         % Construct sketch and sample cores
-        if resample
-            % Resample all cores, except nth which will be updated
+        if resample % Resample all cores, except nth which will be updated
             J = embedding_dims(n);
             samples = nan(J, N);
             for m = 1:N
@@ -125,8 +127,7 @@ for it = 1:maxiters
                     core_samples{m} = cores{m}(:, samples(:,m), :);
                 end
             end
-        else
-            % Only resample the core that was updated in last iteration
+        else % Only resample the core that was updated in last iteration
             m = mod(n-2,N)+1;
             samples(:, m) = randsample(sz(m), J, true, sampling_probs{m});
             core_samples{m} = cores{m}(:, samples(:,m), :);
@@ -152,54 +153,57 @@ for it = 1:maxiters
         G_sketch = reshape(G_sketch, J, numel(G_sketch)/J);
         G_sketch = rescaling .* G_sketch;
         
-        % Construct sketched right hand side
-        if X_mat_flag
-            % doing trick below since matfile arrays don't take linear
-            % indexes
+        % Sample right hand side
+        if X_mat_flag % X in mat file -- load slicewise
+            Xn_sketch = zeros(J, sz(n));
+            for j = 1:J
+                slice_arg = cell(1,N);
+                for m = 1:N
+                    if m == n
+                        slice_arg{m} = ':';
+                    else
+                        slice_arg{m} = samples(j, m);
+                    end
+                end
+                row = X_mat.Y(slice_arg{:});
+                Xn_sketch(j, :) = row(:).';
+                if mod(j,3000) == 0
+                    fprintf('\tDone with j = %d\n', j);
+                end
+            end
+            
+            % Old below
+            %{
             slice_arg = col_cell;
             inc_pts = linspace(0, sz(n), no_mat_inc(n)+1);
             Xn_sketch = zeros(J, sz(n));
             for m = 1:no_mat_inc(n)
-                
-                
                 slice_arg{n} = inc_pts(m)+1:inc_pts(m+1);
                 df = inc_pts(m+1)-inc_pts(m);
                 sz_slice = sz;
                 sz_slice(n) = df;
                 sz_slice_shifted = [1 sz_slice(1:end-1)];
                 idx_slice_prod = cumprod(sz_slice_shifted);
-
-                %samples_lin_idx = sub2ind(sz([idx n]), [repmat(samples(:, idx), df, 1) repelem((1:df).', J, 1)]);
                 samples_lin_idx_1 = 1 + (samples(:, idx)-1) * idx_slice_prod(idx).';
                 samples_lin_idx_2 = idx_slice_prod(n)*(0:df-1).';
                 samples_lin_idx = repmat(samples_lin_idx_1, df, 1) + repelem(samples_lin_idx_2, J, 1);
                 X_slice = X_mat.Y(slice_arg{:});
                 Xn_sketch(:, inc_pts(m)+1:inc_pts(m+1)) = reshape(X_slice(samples_lin_idx), J, df);
+                if verbose
+                    fprintf('\tFinished slice %d of %d\n', m, no_mat_inc(n));
+                end
             end
-        else
-            % X array in RAM -- use linear indexing
+            %}
+        else % X array in RAM -- use linear indexing
             samples_lin_idx_1 = 1 + (samples(:, idx)-1) * idx_prod(idx).';
             samples_lin_idx = repmat(samples_lin_idx_1, sz(n), 1) + slow_idx{n};
             X_sampled = X(samples_lin_idx);
             Xn_sketch = reshape(X_sampled, J, sz(n));
         end
         
-        
-        %Xn_sketch = reshape(X_sampled, sz(n), J);
-        %Xn_sketch = permute(Xn_sketch, [2 1]);
+        % Rescale right hand side
         Xn_sketch = rescaling .* Xn_sketch;
-        
-        % Below is old code for constructing sketched RHS, which is slower
-        % than the above block.
-        %{
-        Xn = permute(mode_unfolding(X, n), [2 1]);
-        samples_prod = 1 + (samples(:, idx)-1) * [1 cumprod(sz(idx(1:end-1)))].'; 
-        Xn_sketch = Xn(samples_prod, :);      
-        if isa(Xn_sketch, 'sptensor')
-            Xn_sketch = sparse(Xn_sketch.subs(:,1), Xn_sketch.subs(:,2), Xn_sketch.vals, size(Xn_sketch,1), size(Xn_sketch,2));
-        end
-        %}
-        
+
         % Solve sketched LS problem and update core
         Z = (G_sketch \ Xn_sketch).';
         cores{n} = classical_mode_folding(Z, 2, size(cores{n}));
@@ -209,7 +213,9 @@ for it = 1:maxiters
         sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
     end
     
-    if tol > 0
+    % Check convergence: Relative error
+    if tol > 0 && strcmp(conv_crit, 'relative error')
+        
         % Compute full tensor corresponding to cores
         Y = cores_2_tensor(cores);
 
@@ -219,8 +225,7 @@ for it = 1:maxiters
             er = norm(XX(:)-Y(:))/norm(XX(:));
         else
             er = norm(X(:)-Y(:))/norm(X(:));
-        end
-        
+        end        
         if verbose
             fprintf('\tRelative error after iteration %d: %.8f\n', it, er);
         end
@@ -235,10 +240,38 @@ for it = 1:maxiters
 
         % Update old error
         er_old = er;
+        
+    % Check convergence: Norm change 
+    elseif tol > 0 && strcmp(conv_crit, 'norm')
+        
+        % Compute norm of TR tensor and change if it > 1
+
+        norm_new = normTR(cores);
+        if it == 1
+            norm_change = Inf;
+        else
+            norm_change = abs(norm_new - norm_old);
+            if verbose
+                fprintf('\tNorm change after iteration %d: %.8f\n', it, norm_change);
+            end
+        end
+        
+        % Break if change in relative error below threshold
+        if norm_change < tol
+            if verbose
+                fprintf('\tNorm change below tol; terminating...\n');
+            end
+            break
+        end
+        
+        % Update old norm
+        norm_old = norm_new;
+    
+    % Just print iteration count
     else
         if verbose
             fprintf('\tIteration %d complete\n', it);
-        end
+        end  
     end
     
 end

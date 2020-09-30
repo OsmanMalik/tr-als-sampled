@@ -1,16 +1,16 @@
 % Demo 1: Just in test stage at this point...
 
-sz = [500 500 500];
+sz = [200 200 200];
 ranks = 10*ones(size(sz));
 noise = 1e-1;
-target_acc = 1.2;
+target_acc = 1.20;
 no_trials = 10;
 
-X = generate_low_rank_tensor(sz, ranks, noise, 'large_elem', 20);
+X = generate_low_rank_tensor(sz, ranks+0, noise, 'large_elem', 20);
 
 %% TR-ALS
 
-no_it = 2*14;
+no_it = 2*11;
 
 tic; cores1 = tr_als(X, ranks, 'tol', 0, 'maxiters', no_it, 'verbose', true); time_1 = toc;
 Y = cores_2_tensor(cores1);
@@ -37,6 +37,28 @@ while true
     J = J + J_inc;
 end
 
+%% TR-ALS-Sampled from disk
+J = 2*ranks(1)^2;
+J_inc = 100;
+time_2_disk = [];
+acc_2_disk = [];
+X_mat_name = 'tensor.mat';
+Y = X;
+save(X_mat_name, 'Y', '-v7.3');
+while true
+    tic; 
+    cores2 = tr_als_sampled(X_mat_name, ranks, J*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'resample', true, 'verbose', true, 'no_mat_inc', 10); 
+    time_2_disk = [time_2_disk; toc];
+    Y = cores_2_tensor(cores2);
+    acc_2_disk = [acc_2_disk; norm(Y(:)-X(:))/norm(X(:))];
+    fprintf('\tAccuracy for TR-ALS-Sampled is %.2e\n', acc_2_disk(end));
+    if acc_2_disk(end)/acc_1 < target_acc
+        fprintf('\tTarget accuracy reached; breaking...\n');
+        break
+    end
+    J = J + J_inc;
+end
+
 %% Projected TR-ALS (Yuan et al., 2019)
 K = 10;
 K_inc = 5;
@@ -44,7 +66,7 @@ time_3 = [];
 acc_3 = [];
 while true
     tic; 
-    cores3 = rTRD(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', true);
+    cores3 = rtr_als(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', true);
     time_3 = [time_3; toc];
     Y = cores_2_tensor(cores3);
     acc_3 = [acc_3; norm(Y(:)-X(:))/norm(X(:))];
