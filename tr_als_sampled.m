@@ -243,7 +243,7 @@ for it = 1:maxiters
             Z = ZT.';
         else
             if alpha > 0
-                Z = ( G_sketch.'*G_sketch + alpha*eye(size(G_sketch,2)) ) \ ( G_sketch.'*Xn_sketch );
+                Z = (( G_sketch.'*G_sketch + alpha*eye(size(G_sketch,2)) ) \ ( G_sketch.'*Xn_sketch )).';
             else
                 Z = (G_sketch \ Xn_sketch).';
             end
