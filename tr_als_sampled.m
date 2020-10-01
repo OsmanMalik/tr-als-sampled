@@ -40,6 +40,7 @@ addParameter(params, 'resample', true, @isscalar);
 addParameter(params, 'verbose', false, @isscalar);
 addParameter(params, 'no_mat_inc', false);
 addParameter(params, 'breakup', false);
+addParameter(params, 'alpha', 0);
 parse(params, varargin{:});
 
 conv_crit = params.Results.conv_crit;
@@ -49,6 +50,7 @@ resample = params.Results.resample;
 verbose = params.Results.verbose;
 no_mat_inc = params.Results.no_mat_inc;
 breakup = params.Results.breakup;
+alpha = params.Results.alpha;
 
 % Check if X is path to mat file on disk
 %   X_mat_flag is a flag that keeps track of if X is an array or path to
@@ -240,7 +242,11 @@ for it = 1:maxiters
         if breakup(n) > 1
             Z = ZT.';
         else
-            Z = (G_sketch \ Xn_sketch).';
+            if alpha > 0
+                Z = ( G_sketch.'*G_sketch + alpha*eye(size(G_sketch,2)) ) \ ( G_sketch.'*Xn_sketch );
+            else
+                Z = (G_sketch \ Xn_sketch).';
+            end
         end
 
         cores{n} = classical_mode_folding(Z, 2, size(cores{n}));
@@ -325,8 +331,10 @@ for it = 1:maxiters
     
 end
 
-if nargout > 1
+if nargout > 1 && exist('conv_vec', 'var')
     varargout{1} = conv_vec(1:it);
+else
+    varargout{1} = nan;
 end
 
 end
