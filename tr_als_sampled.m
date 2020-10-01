@@ -1,4 +1,4 @@
-function cores = tr_als_sampled(X, ranks, embedding_dims, varargin)
+function [cores, varargout] = tr_als_sampled(X, ranks, embedding_dims, varargin)
 %tr_als_sampled Compute tensor ring decomposition via sampled ALS
 %
 %For loading from file: It is assumed that the tensor is stored in a
@@ -33,12 +33,13 @@ mtimesx('SPEED');
 
 % Optional inputs
 params = inputParser;
-addParameter(params, 'conv_crit', 'relative error');
+addParameter(params, 'conv_crit', 'none');
 addParameter(params, 'tol', 1e-3, @isscalar);
 addParameter(params, 'maxiters', 50, @(x) isscalar(x) & x > 0);
 addParameter(params, 'resample', true, @isscalar);
 addParameter(params, 'verbose', false, @isscalar);
 addParameter(params, 'no_mat_inc', false);
+addParameter(params, 'breakup', false);
 parse(params, varargin{:});
 
 conv_crit = params.Results.conv_crit;
@@ -47,6 +48,7 @@ maxiters = params.Results.maxiters;
 resample = params.Results.resample;
 verbose = params.Results.verbose;
 no_mat_inc = params.Results.no_mat_inc;
+breakup = params.Results.breakup;
 
 % Check if X is path to mat file on disk
 %   X_mat_flag is a flag that keeps track of if X is an array or path to
@@ -88,14 +90,26 @@ for n = 2:N
     sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
 end
 core_samples = cell(1, N);
+if ~breakup(1)
+    breakup = ones(1,N);
+end
 
 slow_idx = cell(1,N);
 sz_shifted = [1 sz(1:end-1)];
 idx_prod = cumprod(sz_shifted);
+sz_pts = cell(1,N);
 for n = 1:N
-    J = embedding_dims(n);
-    samples_lin_idx_2 = prod(sz_shifted(1:n))*(0:sz(n)-1).';
-    slow_idx{n} = repelem(samples_lin_idx_2, J, 1);
+    sz_pts{n} = round(linspace(0, sz(n), breakup(n)+1));
+    slow_idx{n} = cell(1,breakup(n));
+    for brk = 1:breakup(n)
+        J = embedding_dims(n);
+        samples_lin_idx_2 = prod(sz_shifted(1:n))*(sz_pts{n}(brk):sz_pts{n}(brk+1)-1).';
+        slow_idx{n}{brk} = repelem(samples_lin_idx_2, J, 1);
+    end
+end
+
+if nargout > 1 && tol > 0 && (strcmp(conv_crit, 'relative error') || strcmp(conv_crit, 'norm'))
+    conv_vec = zeros(1, maxiters);
 end
 
 %% Main loop
@@ -152,8 +166,14 @@ for it = 1:maxiters
         G_sketch = permute(G_sketch, [3 2 1]);
         G_sketch = reshape(G_sketch, J, numel(G_sketch)/J);
         G_sketch = rescaling .* G_sketch;
+        if breakup(n) > 1
+            [L, U, P] = lu(G_sketch);
+            ZT = zeros(size(G_sketch,2), sz(n));
+        end
         
         % Sample right hand side
+        for brk = 1:breakup(n)
+        %{
         if X_mat_flag % X in mat file -- load slicewise
             Xn_sketch = zeros(J, sz(n));
             for j = 1:J
@@ -199,19 +219,37 @@ for it = 1:maxiters
             samples_lin_idx = repmat(samples_lin_idx_1, sz(n), 1) + slow_idx{n};
             X_sampled = X(samples_lin_idx);
             Xn_sketch = reshape(X_sampled, J, sz(n));
+            %if isa(X, 'sptensor')
+            %    Xn_sketch = sparse(Xn_sketch);
+            %end
         end
-        
-        % Rescale right hand side
-        Xn_sketch = rescaling .* Xn_sketch;
+        %}
+            
+            no_cols = sz_pts{n}(brk+1)-sz_pts{n}(brk);
+            samples_lin_idx_1 = 1 + (samples(:, idx)-1) * idx_prod(idx).';
+            samples_lin_idx = repmat(samples_lin_idx_1, no_cols, 1) + slow_idx{n}{brk};
+            X_sampled = X(samples_lin_idx);
+            Xn_sketch = reshape(X_sampled, J, no_cols);
 
-        % Solve sketched LS problem and update core
-        Z = (G_sketch \ Xn_sketch).';
+            % Rescale right hand side
+            Xn_sketch = rescaling .* Xn_sketch;
+            if breakup(n) > 1
+                ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ P*Xn_sketch);
+            end
+        end
+        if breakup(n) > 1
+            Z = ZT.';
+        else
+            Z = (G_sketch \ Xn_sketch).';
+        end
+
         cores{n} = classical_mode_folding(Z, 2, size(cores{n}));
         
         % Update sampling distribution for core
         U = col(classical_mode_unfolding(cores{n}, 2));
         sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
     end
+    
     
     % Check convergence: Relative error
     if tol > 0 && strcmp(conv_crit, 'relative error')
@@ -230,6 +268,11 @@ for it = 1:maxiters
             fprintf('\tRelative error after iteration %d: %.8f\n', it, er);
         end
 
+        % Save current error to conv_vec if required
+        if nargout > 1
+            conv_vec(it) = er;
+        end
+        
         % Break if change in relative error below threshold
         if abs(er - er_old) < tol
             if verbose
@@ -240,6 +283,7 @@ for it = 1:maxiters
 
         % Update old error
         er_old = er;
+        
         
     % Check convergence: Norm change 
     elseif tol > 0 && strcmp(conv_crit, 'norm')
@@ -254,6 +298,11 @@ for it = 1:maxiters
             if verbose
                 fprintf('\tNorm change after iteration %d: %.8f\n', it, norm_change);
             end
+        end
+        
+        % Save current norm_change to conv_vec
+        if nargout > 1
+            conv_vec(it) = norm_change;
         end
         
         % Break if change in relative error below threshold
@@ -274,6 +323,10 @@ for it = 1:maxiters
         end  
     end
     
+end
+
+if nargout > 1
+    varargout{1} = conv_vec(1:it);
 end
 
 end
