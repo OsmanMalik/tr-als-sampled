@@ -169,7 +169,11 @@ for it = 1:maxiters
         G_sketch = reshape(G_sketch, J, numel(G_sketch)/J);
         G_sketch = rescaling .* G_sketch;
         if breakup(n) > 1
-            [L, U, p] = lu(G_sketch, 'vector');
+            if alpha > 0
+                [L, U, p] = lu(G_sketch.'*G_sketch + alpha*eye(size(G_sketch,2)), 'vector');
+            else 
+                [L, U, p] = lu(G_sketch, 'vector');
+            end
             ZT = zeros(size(G_sketch,2), sz(n));
         end
         
@@ -235,8 +239,13 @@ for it = 1:maxiters
 
             % Rescale right hand side
             Xn_sketch = rescaling .* Xn_sketch;
+            
             if breakup(n) > 1
-                ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ Xn_sketch(p, :));
+                if alpha > 0
+                    ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ G_sketch(:,p).'*Xn_sketch);
+                else
+                    ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ Xn_sketch(p, :));
+                end
             end
         end
         if breakup(n) > 1
