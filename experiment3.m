@@ -60,9 +60,11 @@ end
 
 sketch_dims = J*ones(1,N);
 ranks = R*ones(1,N);
+my_tic = tic;
 [cores, conv_vec] = tr_als_sampled(X, ranks, sketch_dims, 'tol', tol, 'maxiters', no_it, 'resample', true, 'verbose', true, 'conv_crit', 'norm', 'breakup', breakup, 'alpha', alpha); 
+my_toc = toc(my_tic);
 
 %% Save
 
-%fname = "experiment3_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
-%save(fname)
+fname = "experiment3_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
+save(fname)
