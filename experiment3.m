@@ -1,11 +1,12 @@
 % This experiment is meant to be for sparse real world data
 
 % Settings
-dataset = "uber";
-J = 50000;
-R = 5;
-no_it = 100;
+dataset = "crime-comm";
+J = 20000;
+R = 10;
+no_it = 20;
 tol = 1e-1;
+alpha = 0;
 
 %% Load and preprocess
 
@@ -14,6 +15,7 @@ if strcmp(dataset, 'synthetic')
     N = length(sz);
     density = .01;
     X = sptenrand(sz, density);
+    breakup = [1, 1, 1];
 else
     if strcmp(dataset, 'uber')
         tensor_path = "D:\data_sets\tensors\Uber Pickups\uber.tns";
@@ -21,6 +23,12 @@ else
     elseif strcmp(dataset, 'nips')
         tensor_path = "D:\data_sets\tensors\NIPS Publications\nips.tns";
         breakup = [3, 3, 14, 1];
+    elseif strcmp(dataset, 'crime-comm') % Size: 6186 x 24 x 77 x 32
+        tensor_path = "D:\data_sets\tensors\Chicago Crime\chicago-crime-comm.tns";
+        breakup = [6, 1, 1, 1];
+    elseif strcmp(dataset, 'crime-geo') % Size: 6185 x 24 x 380 x 395 x 32
+        tensor_path = "D:\data_sets\tensors\Chicago Crime\chicago.tns";
+        breakup = [1, 1, 1, 1, 1];
     end
     mat = importdata(tensor_path);
     N = size(mat, 2) - 1;
@@ -52,9 +60,9 @@ end
 
 sketch_dims = J*ones(1,N);
 ranks = R*ones(1,N);
-[cores, conv_vec] = tr_als_sampled(X, ranks, sketch_dims, 'tol', tol, 'maxiters', no_it, 'resample', true, 'verbose', true, 'conv_crit', 'norm', 'breakup', breakup); 
+[cores, conv_vec] = tr_als_sampled(X, ranks, sketch_dims, 'tol', tol, 'maxiters', no_it, 'resample', true, 'verbose', true, 'conv_crit', 'norm', 'breakup', breakup, 'alpha', alpha); 
 
 %% Save
 
-fname = "experiment3_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
-save(fname)
+%fname = "experiment3_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
+%save(fname)
