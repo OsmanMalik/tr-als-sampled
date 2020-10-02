@@ -169,7 +169,7 @@ for it = 1:maxiters
         G_sketch = reshape(G_sketch, J, numel(G_sketch)/J);
         G_sketch = rescaling .* G_sketch;
         if breakup(n) > 1
-            [L, U, P] = lu(G_sketch);
+            [L, U, p] = lu(G_sketch, 'vector');
             ZT = zeros(size(G_sketch,2), sz(n));
         end
         
@@ -236,7 +236,7 @@ for it = 1:maxiters
             % Rescale right hand side
             Xn_sketch = rescaling .* Xn_sketch;
             if breakup(n) > 1
-                ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ P*Xn_sketch);
+                ZT(:, sz_pts{n}(brk)+1:sz_pts{n}(brk+1)) = U \ (L \ Xn_sketch(p, :));
             end
         end
         if breakup(n) > 1
