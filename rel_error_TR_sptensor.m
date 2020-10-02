@@ -44,7 +44,7 @@ for n = 1:no_inc
     Y_slice = cores_2_tensor(cores_slice);
     nrm2 = nrm2 + norm(X_slice(:) - Y_slice(:))^2;
     nrmX2 = nrmX2 + norm(X_slice(:))^2;
-    n
+    fprintf('Finished computing norm for slice %d out of %d\n', n, no_inc)
 end
 
 rel_error = sqrt(nrm2/nrmX2);
