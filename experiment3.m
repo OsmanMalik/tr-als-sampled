@@ -1,7 +1,7 @@
 % This experiment is meant to be for sparse real world data
 
 % Settings
-dataset = "crime-comm";
+dataset = "nell-mini";
 J = 20000;
 R = 10;
 no_it = 20;
@@ -29,10 +29,17 @@ else
     elseif strcmp(dataset, 'crime-geo') % Size: 6185 x 24 x 380 x 395 x 32
         tensor_path = "D:\data_sets\tensors\Chicago Crime\chicago.tns";
         breakup = [1, 1, 1, 1, 1];
+    elseif strcmp(dataset, 'nell-mini')
+        tensor_path = "D:\data_sets\tensors\NELL-2\nell-2.tns";
+        breakup = [1, 1, 1];
+        mini_size = 1000;
     end
     mat = importdata(tensor_path);
     N = size(mat, 2) - 1;
     X = sptensor(mat(:, 1:N), mat(:, end));
+    if strcmp(dataset, 'nell-mini')
+        X = X(1:mini_size, 1:mini_size, 1:mini_size);
+    end
     sz = size(X);
 end
 
