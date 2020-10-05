@@ -60,7 +60,8 @@ for m = 1:length(I)
         
         % Determine number of iterations
         fprintf('\tDeterminig no. iterations for I = %d, trial = %d...', I(m), tr);
-        [~, tr_als_it] = tr_als(X, ranks, 'tol', tol, 'maxiters', 1000, 'verbose', verbose);
+        [~, conv_vec] = tr_als(X, ranks, 'tol', tol, 'maxiters', 1000, 'verbose', verbose);
+        tr_als_it = length(conv_vec);
         no_it = 2*tr_als_it;
         NO_IT(tr, m) = no_it;
         fprintf(' Done! No. iterations to use: %d\n', no_it);
