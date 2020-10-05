@@ -1,7 +1,9 @@
-% This experiment is meant to be for sparse real world data
+% This experiment is meant to be for sparse real world data, for the
+% TR-ALS-Sampled method. I'll have separate scripts for the different
+% methods, since they require quite different preprocessing.
 
 % Settings
-dataset = "nell-mini";
+dataset = "uber";
 J = 20000;
 R = 10;
 no_it = 20;
