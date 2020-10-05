@@ -1,4 +1,4 @@
-function cores = rtr_als(X, ranks, embedding_dims, varargin)
+function [cores, varargout] = rtr_als(X, ranks, embedding_dims, varargin)
 %rTRD Projection based randomized tensor ring decomposition
 %
 %cores = rTRD(X, ranks, embedding_dims, varargin) computes a tensor ring
@@ -17,13 +17,18 @@ N = length(sz);
 Q = cell(1,N);
 for n = 1:N
     Xn = classical_mode_unfolding(X, n);
-    J = embedding_dims(n);
-    M = randn(prod(sz)/sz(n), J);
+    K = embedding_dims(n);
+    M = randn(prod(sz)/sz(n), K);
     [U,~] = qr(Xn*M,0);
     Q{n} = U.';
 end
 P = double(ttm(tensor(X), Q));
-cores = tr_als(P, ranks, varargin{:});
+if nargout == 1
+    cores = tr_als(P, ranks, varargin{:});
+else
+    [cores, conv_vec] = tr_als(P, ranks, varargin{:});
+    varargout{1} = conv_vec; 
+end
 for n = 1:N
     cores{n} = double(ttm(tensor(cores{n}), Q{n}.', 2));
 end
