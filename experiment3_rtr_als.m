@@ -134,9 +134,15 @@ toc_decompose = toc(tic_decompose);
 %% Compute TR cores for original tensor
 
 tic_uncompress = tic;
-cores{1} = double(ttm(tensor(cores{1}), Q1.', 2));
-cores{3} = double(ttm(tensor(cores{3}), Q3.', 2));
-cores{4} = double(ttm(tensor(cores{4}), Q4.', 2));
+if strcmp(dataset, 'uber')
+    cores{1} = double(ttm(tensor(cores{1}), Q1.', 2));
+    cores{3} = double(ttm(tensor(cores{3}), Q3.', 2));
+    cores{4} = double(ttm(tensor(cores{4}), Q4.', 2));
+elseif strcmp(dataset, 'nell-mini')
+    cores{1} = double(ttm(tensor(cores{1}), Q1.', 2));
+    cores{2} = double(ttm(tensor(cores{2}), Q2.', 2));
+    cores{3} = double(ttm(tensor(cores{3}), Q3.', 2));
+end
 toc_uncompress = toc(tic_uncompress);
 
 toc_total = toc_compress + toc_decompose + toc_uncompress;
