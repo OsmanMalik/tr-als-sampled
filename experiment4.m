@@ -5,7 +5,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "dc";
+dataset = "bench";
 R = 10;
 no_it = 100;
 
@@ -38,10 +38,19 @@ else
         load(tensor_path)
         X = paviaU;
         tensor_type = 'dense';
-    elseif strcmp(dataset, 'dc')  
+    elseif strcmp(dataset, 'dc')
+        % See this post for info on loading data: https://www.mathworks.com/matlabcentral/answers/449291-how-to-display-hyperspectral-image-washington-dc
         tensor_path = "D:\data_sets\hyperspectral_imaging\dc.tif";
         data1 = imread(tensor_path);
         X = double(data1);
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'bench')
+        tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\Man Sitting On a Bench.mp4';
+        vid = VideoReader(tensor_path);
+        X = zeros(1080, 1920, 364);
+        for k = 1:size(X,3)
+            X(:,:,k) = mean(read(vid, k),3);
+        end
         tensor_type = 'dense';
     end
     if strcmp(tensor_type, 'sparse')
@@ -169,6 +178,7 @@ end
 fprintf('\n');
 
 % Save stuff
+clear 
 save(fname)  % Just save everything...
 % save(fname, 'NO_IT', ...
 %     'rel_error_TR_ALS', ...
