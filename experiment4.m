@@ -5,7 +5,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "bench";
+dataset = "cat";
 R = 10;
 no_it = 100;
 
@@ -45,12 +45,18 @@ else
         X = double(data1);
         tensor_type = 'dense';
     elseif strcmp(dataset, 'bench')
-        tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\Man Sitting On a Bench.mp4';
-        vid = VideoReader(tensor_path);
-        X = zeros(1080, 1920, 364);
-        for k = 1:size(X,3)
-            X(:,:,k) = mean(read(vid, k),3);
-        end
+        tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\bench.mat';
+        load(tensor_path);
+        %tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\Man Sitting On a Bench.mp4';
+        %vid = VideoReader(tensor_path);
+        %X = zeros(1080, 1920, 364);
+        %for k = 1:size(X,3)
+        %    X(:,:,k) = mean(read(vid, k),3);
+        %end
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'cat')
+        tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
+        load(tensor_path);
         tensor_type = 'dense';
     end
     if strcmp(tensor_type, 'sparse')
