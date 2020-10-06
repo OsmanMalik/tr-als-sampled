@@ -15,14 +15,18 @@ function [cores, varargout] = rtr_als(X, ranks, embedding_dims, varargin)
 sz = size(X);
 N = length(sz);
 Q = cell(1,N);
+P = tensor(X);
 for n = 1:N
     Xn = classical_mode_unfolding(X, n);
     K = embedding_dims(n);
-    M = randn(prod(sz)/sz(n), K);
-    [U,~] = qr(Xn*M,0);
-    Q{n} = U.';
+    if K < sz(n) % Only compress if embedding dim is smaller than dim size
+        M = randn(prod(sz)/sz(n), K);
+        [U,~] = qr(Xn*M,0);
+        Q{n} = U.';
+        P = ttm(P, Q{n}, n);
+    end
 end
-P = double(ttm(tensor(X), Q));
+P = double(P);
 if nargout == 1
     cores = tr_als(P, ranks, varargin{:});
 else
@@ -30,7 +34,10 @@ else
     varargout{1} = conv_vec; 
 end
 for n = 1:N
-    cores{n} = double(ttm(tensor(cores{n}), Q{n}.', 2));
+    K = embedding_dims(n);
+    if K < sz(n) % Only uncompress compressed dims
+        cores{n} = double(ttm(tensor(cores{n}), Q{n}.', 2));
+    end
 end
 
 end
