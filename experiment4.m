@@ -5,7 +5,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "pavia";
+dataset = "dc";
 R = 10;
 no_it = 100;
 
@@ -37,6 +37,11 @@ else
         tensor_path = "D:\data_sets\hyperspectral_imaging\PaviaU.mat";
         load(tensor_path)
         X = paviaU;
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'dc')  
+        tensor_path = "D:\data_sets\hyperspectral_imaging\dc.tif";
+        data1 = imread(tensor_path);
+        X = double(data1);
         tensor_type = 'dense';
     end
     if strcmp(tensor_type, 'sparse')
@@ -130,7 +135,7 @@ for tr = 1:no_trials
     K = round(max(sz)/10);
     while true
         tic_exp = tic; 
-        cores = rtr_als(X, ranks, K, 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
+        cores = rtr_als(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
         time_rTR_ALS{tr, m} = [time_rTR_ALS{tr, m}; toc(tic_exp)];
         Y = cores_2_tensor(cores);
         rel_error_rTR_ALS{tr, m} = [rel_error_rTR_ALS{tr, m}; norm(Y(:)-X(:))/normX];
