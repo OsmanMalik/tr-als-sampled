@@ -5,7 +5,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "nell-mini";
+dataset = "pavia";
 R = 10;
 no_it = 100;
 
@@ -19,30 +19,45 @@ if strcmp(dataset, 'synthetic')
 else
     if strcmp(dataset, 'uber')
         tensor_path = "D:\data_sets\tensors\Uber Pickups\uber.tns";
+        tensor_type = 'sparse';
     elseif strcmp(dataset, 'nips')
         tensor_path = "D:\data_sets\tensors\NIPS Publications\nips.tns";
+        tensor_type = 'sparse';
     elseif strcmp(dataset, 'crime-comm') % Size: 6186 x 24 x 77 x 32
         tensor_path = "D:\data_sets\tensors\Chicago Crime\chicago-crime-comm.tns";
+        tensor_type = 'sparse';
     elseif strcmp(dataset, 'crime-geo') % Size: 6185 x 24 x 380 x 395 x 32
         tensor_path = "D:\data_sets\tensors\Chicago Crime\chicago.tns";
+        tensor_type = 'sparse';
     elseif strcmp(dataset, 'nell-mini')
         tensor_path = "D:\data_sets\tensors\NELL-2\nell-2.tns";
         mini_size = 500;
+        tensor_type = 'sparse';
+    elseif strcmp(dataset, 'pavia')
+        tensor_path = "D:\data_sets\hyperspectral_imaging\PaviaU.mat";
+        load(tensor_path)
+        X = paviaU;
+        tensor_type = 'dense';
     end
-    mat = importdata(tensor_path);
-    N = size(mat, 2) - 1;
-    X = sptensor(mat(:, 1:N), mat(:, end));
-    if strcmp(dataset, 'nell-mini')
-        X = X(1:mini_size, 1:mini_size, 1:mini_size);
+    if strcmp(tensor_type, 'sparse')
+        mat = importdata(tensor_path);
+        N = size(mat, 2) - 1;
+        X = sptensor(mat(:, 1:N), mat(:, end));
+        if strcmp(dataset, 'nell-mini')
+            X = X(1:mini_size, 1:mini_size, 1:mini_size);
+        end
+        sz = size(X);
+        X = double(X);
+    elseif strcmp(tensor_type, 'dense')
+        sz = size(X);
+        N = length(sz);
     end
-    sz = size(X);
-    X = double(X);
 end
 normX = norm(tensor(X));
 
 %% 
 ranks = R*ones(1, N); % Target ranks
-target_acc = 1.20; % Target accuracy (1+epsilon)
+target_acc = 1.10; % Target accuracy (1+epsilon)
 no_trials = 1; % Number of experiment trials for averaging
 verbose = true;
 
@@ -112,7 +127,7 @@ for tr = 1:no_trials
 
     % Run rTR-ALS
     fprintf('\tRunning rTR-ALS for trial = %d', tr)
-    K = round(sz/10);
+    K = round(max(sz)/10);
     while true
         tic_exp = tic; 
         cores = rtr_als(X, ranks, K, 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
@@ -122,7 +137,7 @@ for tr = 1:no_trials
         if rel_error_rTR_ALS{tr, m}(end)/rel_error_TR_ALS(tr, m) < target_acc
             break
         end
-        K = K + round(sz/20);
+        K = K + round(max(sz)/20);
         fprintf('.');
     end
     fprintf(' Done!\n');
@@ -149,14 +164,15 @@ end
 fprintf('\n');
 
 % Save stuff
-save(fname, 'NO_IT', ...
-    'rel_error_TR_ALS', ...
-    'rel_error_TR_ALS_Sampled', ...
-    'rel_error_rTR_ALS', ...
-    'rel_error_TR_SVD', ...
-    'rel_error_TR_SVD_Rand', ...
-    'time_TR_ALS', ...
-    'time_TR_ALS_Sampled', ...
-    'time_rTR_ALS', ...
-    'time_TR_SVD', ...
-    'time_TR_SVD_Rand')
+save(fname)  % Just save everything...
+% save(fname, 'NO_IT', ...
+%     'rel_error_TR_ALS', ...
+%     'rel_error_TR_ALS_Sampled', ...
+%     'rel_error_rTR_ALS', ...
+%     'rel_error_TR_SVD', ...
+%     'rel_error_TR_SVD_Rand', ...
+%     'time_TR_ALS', ...
+%     'time_TR_ALS_Sampled', ...
+%     'time_rTR_ALS', ...
+%     'time_TR_SVD', ...
+%     'time_TR_SVD_Rand')
