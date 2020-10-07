@@ -5,9 +5,10 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "cat";
+dataset = "coil";
 R = 10;
 no_it = 100;
+save_snap = true;
 
 %% Load and preprocess
 
@@ -58,6 +59,23 @@ else
         tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
         load(tensor_path);
         tensor_type = 'dense';
+    elseif strcmp(dataset, 'coil')
+        path = "C:\Users\Osman\Downloads\coil-100\coil-100";
+        flist = dir(path);
+        no_obj = 1;
+        pic_per_obj = 72;
+        strt = 5;
+        X = zeros(128, 128, 3, no_obj*pic_per_obj);
+        cnt = 0;
+        for obj = 1:no_obj
+            for pic = 1:pic_per_obj
+                X(:, :, :, (obj-1)*pic_per_obj + pic) = imread(string(path) + "/" + flist(5+cnt).name);
+                cnt = cnt+1;
+            end
+            obj;
+        end
+        tensor_type = 'dense';
+        X = double(X);
     end
     if strcmp(tensor_type, 'sparse')
         mat = importdata(tensor_path);
@@ -127,6 +145,10 @@ for tr = 1:no_trials
     Y = cores_2_tensor(cores);
     rel_error_TR_ALS(tr, m) = norm(Y(:) - X(:)) / normX;
     fprintf(' Done!\n')
+    if save_snap && tr == 1
+        Y_TR_ALS = Y;
+    end
+        
 
     % Run TR-ALS-Sampled
     fprintf('\tRunning TR-ALS-Sampled for trial = %d', tr)
@@ -142,6 +164,9 @@ for tr = 1:no_trials
         end
         J = J + J_inc;
         fprintf('.');
+    end
+    if save_snap && tr == 1
+        Y_TR_ALS_Sampled = Y;
     end
     fprintf(' Done!\n');
 
@@ -160,6 +185,9 @@ for tr = 1:no_trials
         K = K + round(max(sz)/20);
         fprintf('.');
     end
+    if save_snap && tr == 1
+        Y_rTR_ALS = Y;
+    end
     fprintf(' Done!\n');
 
     % Run TR-SVD
@@ -169,6 +197,9 @@ for tr = 1:no_trials
     time_TR_SVD(tr, m) = toc(tic_exp);
     Y = cores_2_tensor(cores);
     rel_error_TR_SVD(tr, m) = norm(Y(:)-X(:))/normX;
+    if save_snap && tr == 1
+        Y_TR_SVD = Y;
+    end
     fprintf(' Done!\n');
 
     % Run TR-SVD-Rand
@@ -178,13 +209,15 @@ for tr = 1:no_trials
     time_TR_SVD_Rand(tr, m) = toc(tic_exp);
     Y = cores_2_tensor(cores);
     rel_error_TR_SVD_Rand(tr, m) = norm(Y(:)-X(:))/normX;
+    if save_snap && tr == 1
+        Y_TR_SVD_Rand = Y;
+    end
     fprintf(' Done!\n');
 end
 
 fprintf('\n');
 
 % Save stuff
-clear 
 save(fname)  % Just save everything...
 % save(fname, 'NO_IT', ...
 %     'rel_error_TR_ALS', ...
