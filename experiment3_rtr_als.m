@@ -1,5 +1,10 @@
+% Experiment 3: rTR-ALS
+%
 % This experiment is meant to be for sparse real world data, for the
-% rTR-ALS method.
+% rTR-ALS method. 
+%
+% No outputs from this script were used in the paper. I may everntually
+% remove it entirely.
 
 % Settings
 dataset = "nell-mini";
@@ -151,4 +156,3 @@ toc_total = toc_compress + toc_decompose + toc_uncompress;
 
 fname = "experiment3_rtr_als_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
 save(fname)
-

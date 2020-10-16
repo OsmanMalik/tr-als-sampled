@@ -1,7 +1,7 @@
 function [cores, varargout] = rtr_als(X, ranks, embedding_dims, varargin)
-%rTRD Projection based randomized tensor ring decomposition
+%rtr_als Projection based randomized tensor ring decomposition
 %
-%cores = rTRD(X, ranks, embedding_dims, varargin) computes a tensor ring
+%cores = rtr_als(X, ranks, embedding_dims, varargin) computes a tensor ring
 %(TR) decomposition of the input N-dimensional array X. ranks is a length-N
 %vector containing the target ranks. The output cores is a cell containing
 %the N core tensors, each represented as a 3-way array. The embedding_dims
@@ -10,7 +10,10 @@ function [cores, varargout] = rtr_als(X, ranks, embedding_dims, varargin)
 %Optional arguments can be passed, and these will be passed on to tr_als
 %which is used as the solver after compressing.
 %
-%This method was proposed by [Yu19].
+%This method was proposed by 
+%L. Yuan, C. Li, J. Cao and Q. Zhao, "Randomized Tensor Ring Decomposition
+%and Its Application to Large-scale Data Reconstruction," ICASSP 2019, doi:
+%10.1109/ICASSP.2019.8682197.  
 
 sz = size(X);
 N = length(sz);

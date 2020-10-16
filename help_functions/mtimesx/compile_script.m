@@ -1,4 +1,4 @@
-% This script is the suggestion by Ville-Veikko Wettenhovi on the File
+% This script contains the suggestion by Ville-Veikko Wettenhovi on the File
 % Exchange page for mtimesx for compiling on a Windows machine. See
 % https://www.mathworks.com/matlabcentral/fileexchange/25977-mtimesx-fast-matrix-multiply-with-multi-dimensional-support?s_tid=answers_rc2-2_p5_MLT
 % for details. Copy this into the folder containing all the other code and

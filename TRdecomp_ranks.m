@@ -20,7 +20,6 @@ function cores = TRdecomp_ranks(A, ranks)
     r0 = ranks(d);
     rnew = r0*ranks(1);
     
-
     U=U(:,1:rnew);
     S=S(1:rnew, 1:rnew);
     V = V(:, 1:rnew);

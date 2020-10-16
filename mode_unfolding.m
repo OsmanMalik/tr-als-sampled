@@ -16,4 +16,3 @@ if isa(Xn, 'sptensor')
 end
 
 end
-

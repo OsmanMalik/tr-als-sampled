@@ -11,6 +11,12 @@ function [cores, varargout] = tr_als_sampled(X, ranks, embedding_dims, varargin)
 %is a cell containing the N cores tensors, each represented as a 3-way
 %array.
 %
+%cores = tr_als(___, 'conv_crit', conv_crit) is an optional parameter used
+%to control which convergence criterion is used. Set to either 'relative
+%error' or 'norm' to terminate when change in relative error or norm of
+%TR-tensor is below the tolerance in tol. Default is that no convergence
+%criterion is used.
+%
 %cores = tr_als(___, 'tol', tol) is an optional argument that controls the
 %termination tolerance. If the change in the relative error is less than
 %tol at the conclusion of a main loop iteration, the algorithm terminates.
@@ -19,10 +25,30 @@ function [cores, varargout] = tr_als_sampled(X, ranks, embedding_dims, varargin)
 %cores = tr_als(___, 'maxiters', maxiters) is an optional argument that
 %controls the maximum number of main loop iterations. The default is 50.
 %
+%cores = tr_als(___, 'resample', resample) can be used to avoid resampling
+%those factor tensor that haven't been updated. This means that theoretical
+%guarantees no longer formally apply for the LS problems. We always run
+%this with the default of true, which means that full resampling is always
+%done.
+%
 %cores = tr_als(___, 'verbose', verbose) is an optional argument that
 %controls the amount of information printed to the terminal during
 %execution. Setting verbose to true will result in more print out. Default
 %is false.
+%
+%cores = tr_als(___, 'no_mat_inc', no_mat_inc) is used to control how
+%input tensors read from file are sliced up to save RAM. We never use this
+%in our experiments, and I may eventually remove this functionality.
+%
+%cores = tr_als(___, 'breakup', breakup) is an optional length-N vector
+%input that can be used to break up the LS problems with multiple right
+%hand sides that come up into pieces so that not all problems are solved at
+%the same time. This is useful when a tensor dimension is particularly
+%large.
+%
+%cores = tr_als(___, 'alpha', alpha) alpha is an optional parameter which
+%controls how much Tikhonov regularization is added in LS problems. We
+%found that this helped avoid ill-conditioning on certain datasets.
 
 %% Add relevant paths
 

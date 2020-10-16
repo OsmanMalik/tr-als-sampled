@@ -5,17 +5,17 @@ function cores = initialize_cores(sz, ranks, varargin)
 %each with entires drawn iid from the standard Gaussian distribution. sz is
 %a length-N vector with the sizes, and ranks is a length-N vector with the
 %outgoing ranks.
+%
+%cores = initialize_cores(___, 'init_zero', init_zero) will just initialize
+%all cores to zero if init_zero is true. Default is false.
 
-%% Handle optional inputs
-
+% Handle optional inputs
 params = inputParser;
 addParameter(params, 'init_zero', false, @isscalar);
 parse(params, varargin{:});
-
 init_zero = params.Results.init_zero;
 
-%% Main code
-
+% Main code
 N = length(sz);
 cores = cell(N,1);
 for n = 1:N

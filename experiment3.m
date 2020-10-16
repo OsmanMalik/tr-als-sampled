@@ -1,6 +1,11 @@
+% Experiment 3
+%
 % This experiment is meant to be for sparse real world data, for the
 % TR-ALS-Sampled method. I'll have separate scripts for the different
 % methods, since they require quite different preprocessing.
+%
+% No outputs from this script were used in the paper. I may everntually
+% remove it entirely.
 
 % Settings
 dataset = "uber";

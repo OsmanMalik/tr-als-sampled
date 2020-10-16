@@ -18,6 +18,10 @@ function [cores, varargout] = tr_als(X, ranks, varargin)
 %controls the amount of information printed to the terminal during
 %execution. Setting verbose to true will result in more print out. Default
 %is false.
+%
+%This algorithm is based on Alg. 2 in paper by
+%Q. Zhao, G. Zhou, S. Xie, L. Zhang, A. Cichocki. "Tensor ring
+%decomposition". arXiv:1606.05535, 2016.
 
 %% Handle optional inputs
 

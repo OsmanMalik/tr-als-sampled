@@ -1,14 +1,17 @@
 % Experiment 4
+%
 % The purpose of this script is to essentially repeat what we did in
 % experiment 1, but on real data.
+%
+% This script was used to generate the results on real data in the paper.
 
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "coil";
+dataset = "nell-mini"; % Which dataset to use
 R = 10;
 no_it = 100;
-save_snap = true;
+save_snap = true; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
 
 %% Load and preprocess
 
@@ -60,7 +63,7 @@ else
         load(tensor_path);
         tensor_type = 'dense';
     elseif strcmp(dataset, 'coil')
-        path = "C:\Users\Osman\Downloads\coil-100\coil-100";
+        path = "D:\data_sets\images\coil-100";
         flist = dir(path);
         no_obj = 1;
         pic_per_obj = 72;
@@ -107,7 +110,7 @@ J_init = 2*max(ranks)^2;
 J_inc = 1000;
 
 % Settings: TR-SVD-Rand
-oversamp = 10; % Following Remark 1 in their paper
+oversamp = 10; % Following Remark 1 by Ahmadi-Asl et al. (2020)
 
 % Create structures for storing results
 len_I = 1;

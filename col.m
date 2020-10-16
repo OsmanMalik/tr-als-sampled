@@ -1,5 +1,5 @@
 function U = col(A)
-%col Compute matrix whos columns for orthonormal basis for range of A
+%col Compute matrix whos columns form orthonormal basis for range of A
 
 R = rank(A);
 [U, ~, ~] = svd(A, 'econ');

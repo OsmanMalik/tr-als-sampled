@@ -1,8 +1,9 @@
 function subchain_unfolding = subchain_matrix(cores, n)
 %subchain_matrix Compute mode-2 unfolding of subchain excluding n-th core
 %
-%The output is the mode-2 unfolding of the subchain consisting of all cores
-%except the n-th. 
+%subchain_unfolding = subchain_matrix(cores, n) returns the subchain
+%consisting of all cores except the n-th. This is what we call 
+%G_{[2]}^{\neq n} in the paper.
 
 N = length(cores);
 idx = [n+1:N 1:n-1];

@@ -4,11 +4,12 @@ function rel_error = rel_error_TR_sptensor(cores, X_sparse, varargin)
 %rel_error = rel_error_TR_mat(cores, X_sparse) computes the relative
 %error between the TR tensor defined by the TR-cores in cores, and the
 %sptensor X_sparse. The sptensor is treated as ground truth, i.e., used
-%in the denominator in the computation. By default, it slices the first dimension into 10 pieces,
-%loads them separately and computes the norm for one slice at a time.
+%in the denominator in the computation. By default, it slices the first
+%dimension into 10 pieces, loads them separately and computes the norm for
+%one slice at a time. 
 %
 %rel_error = rel_error_TR_mat(___, 'no_inc', no_inc) is an optional
-%parameter than can control how many slices the sptensor is sliced
+%parameter that can control how many slices the sptensor is sliced
 %into. Default is 10.
 %
 %rel_error = rel_error_TR_mat(___, 'slice_dim', slice_dim) is an optional

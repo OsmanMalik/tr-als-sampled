@@ -1,9 +1,11 @@
 % Experiment 1
+%
 % The purpose of this script is to run synthetic experiments on our
 % proposed TR-ALS-Sampled, as well as four other methods that we compare
 % against.
-
-include_toolboxes
+%
+% This script was used to run all the synthetic data experiments in our
+% paper.
 
 % Settings: General experiment 
 I = 100:100:500; % Tensor sizes

@@ -1,5 +1,14 @@
 function [X, cores] = generate_sparse_low_rank_tensor(sz, ranks, density, noise)
 %generate_sparse_low_rank_tensor Generate sparse (TR) low-rank tensor
+%
+%X = generate_sparse_low_rank_tensor(sz, ranks, density, noise) generates a
+%sparse tensor of size sz with TR-ranks ranks, with each core having a
+%density of about the number specified in density. Moreover, Gaussian noise
+%with standard deviation specified in noise is added to all nonzero
+%entries.
+%
+%[X, cores] = generate_sparse_low_rank_tensor(___) also returns the
+%TR-cores.
 
 N = length(sz);
 cores = cell(N,1);
