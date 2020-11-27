@@ -8,10 +8,12 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "nell-mini"; % Which dataset to use
+dataset = "airy"; % Which dataset to use
 R = 10;
 no_it = 100;
-save_snap = true; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
+save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
+run_TR_SVD = false;
+run_TR_SVD_Rand = false;
 
 %% Load and preprocess
 
@@ -79,6 +81,18 @@ else
         end
         tensor_type = 'dense';
         X = double(X);
+    elseif strcmp(dataset, 'sin')
+        x = linspace(-1,1,4^10);
+        y = (x+1).*sin(100*(x+1).^2);
+        X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+    elseif strcmp(dataset, 'airy')
+        x = linspace(.01,100,4^10);
+        y = x.^(-1/4).*sin(2/3 * x.^(3/2));
+        X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+    elseif strcmp(dataset, 'chirp')
+        x = linspace(0,1,4^10);
+        y = sin(4/x).*cos(x.^2);
+        X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
     end
     if strcmp(tensor_type, 'sparse')
         mat = importdata(tensor_path);
@@ -107,7 +121,13 @@ tol = 1e-3; % Tolerance to pass to tr_als when determining number of iterations
 
 % Settings: TR-ALS-Sampled
 J_init = 2*max(ranks)^2;
-J_inc = 1000;
+J_inc = 100;
+
+% Settings: rTR-ALS
+%K_init = round(max(sz)/10);
+K_init = 2;
+%K_inc = round(max(sz)/20);
+K_inc = 1;        
 
 % Settings: TR-SVD-Rand
 oversamp = 10; % Following Remark 1 by Ahmadi-Asl et al. (2020)
@@ -175,7 +195,7 @@ for tr = 1:no_trials
 
     % Run rTR-ALS
     fprintf('\tRunning rTR-ALS for trial = %d', tr)
-    K = round(max(sz)/10);
+    K = K_init;
     while true
         tic_exp = tic; 
         cores = rtr_als(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
@@ -185,7 +205,7 @@ for tr = 1:no_trials
         if rel_error_rTR_ALS{tr, m}(end)/rel_error_TR_ALS(tr, m) < target_acc
             break
         end
-        K = K + round(max(sz)/20);
+        K = K + K_inc;
         fprintf('.');
     end
     if save_snap && tr == 1
@@ -194,28 +214,38 @@ for tr = 1:no_trials
     fprintf(' Done!\n');
 
     % Run TR-SVD
-    fprintf('\tRunning TR-SVD for trial = %d', tr)
-    tic_exp = tic;
-    cores = TRdecomp_ranks(X, ranks);
-    time_TR_SVD(tr, m) = toc(tic_exp);
-    Y = cores_2_tensor(cores);
-    rel_error_TR_SVD(tr, m) = norm(Y(:)-X(:))/normX;
-    if save_snap && tr == 1
-        Y_TR_SVD = Y;
+    if run_TR_SVD
+        fprintf('\tRunning TR-SVD for trial = %d', tr)
+        tic_exp = tic;
+        cores = TRdecomp_ranks(X, ranks);
+        time_TR_SVD(tr, m) = toc(tic_exp);
+        Y = cores_2_tensor(cores);
+        rel_error_TR_SVD(tr, m) = norm(Y(:)-X(:))/normX;
+        if save_snap && tr == 1
+            Y_TR_SVD = Y;
+        end
+        fprintf(' Done!\n');
+    else
+        rel_error_TR_SVD = nan;
+        time_TR_SVD = nan;
     end
-    fprintf(' Done!\n');
 
     % Run TR-SVD-Rand
-    fprintf('\tRunning TR-SVD-Rand for trial = %d', tr)
-    tic_exp = tic;
-    cores = tr_svd_rand(X, ranks, oversamp);
-    time_TR_SVD_Rand(tr, m) = toc(tic_exp);
-    Y = cores_2_tensor(cores);
-    rel_error_TR_SVD_Rand(tr, m) = norm(Y(:)-X(:))/normX;
-    if save_snap && tr == 1
-        Y_TR_SVD_Rand = Y;
+    if run_TR_SVD_Rand
+        fprintf('\tRunning TR-SVD-Rand for trial = %d', tr)
+        tic_exp = tic;
+        cores = tr_svd_rand(X, ranks, oversamp);
+        time_TR_SVD_Rand(tr, m) = toc(tic_exp);
+        Y = cores_2_tensor(cores);
+        rel_error_TR_SVD_Rand(tr, m) = norm(Y(:)-X(:))/normX;
+        if save_snap && tr == 1
+            Y_TR_SVD_Rand = Y;
+        end
+        fprintf(' Done!\n');
+    else
+        rel_error_TR_SVD_Rand = nan;
+        time_TR_SVD_Rand = nan;
     end
-    fprintf(' Done!\n');
 end
 
 fprintf('\n');
