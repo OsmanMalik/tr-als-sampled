@@ -8,7 +8,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "airy"; % Which dataset to use
+dataset = "coil reshape"; % Which dataset to use
 R = 10;
 no_it = 100;
 save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
@@ -64,7 +64,7 @@ else
         tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
         load(tensor_path);
         tensor_type = 'dense';
-    elseif strcmp(dataset, 'coil')
+    elseif strcmp(dataset, 'coil') || strcmp(dataset, 'coil reshape')
         path = "D:\data_sets\images\coil-100";
         flist = dir(path);
         no_obj = 1;
@@ -81,6 +81,16 @@ else
         end
         tensor_type = 'dense';
         X = double(X);
+        if strcmp(dataset, 'coil reshape')
+            newsize = cell(16, 1);
+            for j = 1:14
+                newsize{j} = 2;
+            end
+            newsize{15} = 3;
+            newsize{16} = 72;
+        end
+        X = reshape(X, newsize{:});
+        X = permute(X, [1 8 2 9 3 10 4 11 5 12 6 13 7 14 15 16]);
     elseif strcmp(dataset, 'sin')
         x = linspace(-1,1,4^10);
         y = (x+1).*sin(100*(x+1).^2);
