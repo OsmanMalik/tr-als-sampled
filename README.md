@@ -1,9 +1,9 @@
 # A Sampling Based Method for Tensor Ring Decomposition
-This repo provides code used in the experiments of our paper
+This repo provides code used in the experiments of our paper 
 
-[ADD PAPER TITLE]
+*A Sampling Based Method for Tensor Ring Decomposition*. Osman Asif Malik and Stephen Becker. arXiv:2010.08581
 
-It is available at [ADD LINK]
+It is available at [arXiv](https://arxiv.org/abs/2010.08581).
 
 ## Some further details
 The script **tr_als_sampled.m** is a Matlab implementation of our proposed TR-ALS-Sampled method for sampled tensor ring decomposition. The script **experiment1.m** was used to run the experiments on synthetic data, and **experiment4.m** was used to run experiments on real data. Implementations of the methods we compare to in our paper are available in the following files:
@@ -27,7 +27,16 @@ The other dependencies listed under Requirements should require no installation.
 ## Referencing this code
 If you use our code in any of your own work, please reference our paper:
 
-[ADD BIB CODE]
+```
+@misc{malik2020sampling,
+      title={A Sampling Based Method for Tensor Ring Decomposition}, 
+      author={Osman Asif Malik and Stephen Becker},
+      year={2020},
+      eprint={2010.08581},
+      archivePrefix={arXiv},
+      primaryClass={math.NA}
+}
+```
 
 ## Author contact information
 Please feel free to contact me at any time if you have any questions or would like to provide feedback on this code or on our paper. I can be reached at osman.malik@colorado.edu.
