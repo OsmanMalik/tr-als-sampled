@@ -85,14 +85,17 @@ else
         x = linspace(-1,1,4^10);
         y = (x+1).*sin(100*(x+1).^2);
         X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+		tensor_type = 'dense';
     elseif strcmp(dataset, 'airy')
         x = linspace(.01,100,4^10);
         y = x.^(-1/4).*sin(2/3 * x.^(3/2));
         X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+		tensor_type = 'dense';
     elseif strcmp(dataset, 'chirp')
-        x = linspace(0,1,4^10);
+        x = linspace(0.01,1,4^10);
         y = sin(4/x).*cos(x.^2);
         X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+		tensor_type = 'dense';
     end
     if strcmp(tensor_type, 'sparse')
         mat = importdata(tensor_path);
