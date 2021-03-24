@@ -8,7 +8,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "coil reshape"; % Which dataset to use
+dataset = "pavia"; % Which dataset to use
 R = 10;
 no_it = 100;
 save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
@@ -91,6 +91,11 @@ else
         end
         X = reshape(X, newsize{:});
         X = permute(X, [1 8 2 9 3 10 4 11 5 12 6 13 7 14 15 16]);
+    elseif strcmp(dataset, 'coil compressed')
+        path = "D:\data_sets\images\coil-100-downsampled\compressed_coil_100.mat";
+        load(path)
+        X = img_array;
+        tensor_type = 'dense';
     elseif strcmp(dataset, 'sin')
         x = linspace(-1,1,4^10);
         y = (x+1).*sin(100*(x+1).^2);
@@ -103,9 +108,15 @@ else
 		tensor_type = 'dense';
     elseif strcmp(dataset, 'chirp')
         x = linspace(0.01,1,4^10);
-        y = sin(4/x).*cos(x.^2);
+        y = sin(4./x).*cos(x.^2);
         X = reshape(y, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
 		tensor_type = 'dense';
+    elseif strcmp(dataset, 'weight')
+        path = "D:\data_sets\neural_network_weights\weight.mat";
+        load(path);
+        dict = {4, 4, 4, 4, 4, 4, 4, 4, 6, 3};
+        X = double(reshape(X, dict{:}));
+        tensor_type = 'dense';
     end
     if strcmp(tensor_type, 'sparse')
         mat = importdata(tensor_path);
@@ -185,7 +196,6 @@ for tr = 1:no_trials
         Y_TR_ALS = Y;
     end
         
-
     % Run TR-ALS-Sampled
     fprintf('\tRunning TR-ALS-Sampled for trial = %d', tr)
     J = J_init;
