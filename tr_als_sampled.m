@@ -67,6 +67,7 @@ addParameter(params, 'verbose', false, @isscalar);
 addParameter(params, 'no_mat_inc', false);
 addParameter(params, 'breakup', false);
 addParameter(params, 'alpha', 0);
+addParameter(params, 'uniform_sampling', false);
 parse(params, varargin{:});
 
 conv_crit = params.Results.conv_crit;
@@ -77,6 +78,7 @@ verbose = params.Results.verbose;
 no_mat_inc = params.Results.no_mat_inc;
 breakup = params.Results.breakup;
 alpha = params.Results.alpha;
+uniform_sampling = params.Results.uniform_sampling;
 
 % Check if X is path to mat file on disk
 %   X_mat_flag is a flag that keeps track of if X is an array or path to
@@ -114,8 +116,12 @@ cores = initialize_cores(sz, ranks);
 
 sampling_probs = cell(1, N);
 for n = 2:N
-    U = col(classical_mode_unfolding(cores{n}, 2));
-    sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
+    if uniform_sampling
+        sampling_probs{n} = ones(sz(n), 1)/sz(n);
+    else
+        U = col(classical_mode_unfolding(cores{n}, 2));
+        sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
+    end
 end
 core_samples = cell(1, N);
 if ~breakup(1)
@@ -287,8 +293,12 @@ for it = 1:maxiters
         cores{n} = classical_mode_folding(Z, 2, size(cores{n}));
         
         % Update sampling distribution for core
-        U = col(classical_mode_unfolding(cores{n}, 2));
-        sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
+        if uniform_sampling
+            sampling_probs{n} = ones(sz(n), 1)/sz(n);
+        else
+            U = col(classical_mode_unfolding(cores{n}, 2));
+            sampling_probs{n} = sum(U.^2, 2)/size(U, 2);
+        end
     end
     
     

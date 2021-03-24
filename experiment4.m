@@ -10,8 +10,11 @@
 % Settings: General experiment 
 dataset = "pavia"; % Which dataset to use
 R = 10;
+uniform_sampling = true; % Default is false
 no_it = 100;
 save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
+run_TR_ALS = false;
+run_rTR_ALS = false;
 run_TR_SVD = false;
 run_TR_SVD_Rand = false;
 
@@ -185,15 +188,20 @@ for tr = 1:no_trials
     fprintf(' Done! No. iterations to use: %d\n', no_it);
 
     % Run TR-ALS
-    fprintf('\tRunning TR-ALS for trial = %d...', tr);
-    tic_exp = tic;
-    cores = tr_als(X, ranks, 'tol', 0, 'maxiters', no_it, 'verbose', verbose); 
-    time_TR_ALS(tr, m) = toc(tic_exp);
-    Y = cores_2_tensor(cores);
-    rel_error_TR_ALS(tr, m) = norm(Y(:) - X(:)) / normX;
-    fprintf(' Done!\n')
-    if save_snap && tr == 1
-        Y_TR_ALS = Y;
+    if run_TR_ALS
+        fprintf('\tRunning TR-ALS for trial = %d...', tr);
+        tic_exp = tic;
+        cores = tr_als(X, ranks, 'tol', 0, 'maxiters', no_it, 'verbose', verbose); 
+        time_TR_ALS(tr, m) = toc(tic_exp);
+        Y = cores_2_tensor(cores);
+        rel_error_TR_ALS(tr, m) = norm(Y(:) - X(:)) / normX;
+        fprintf(' Done!\n')
+        if save_snap && tr == 1
+            Y_TR_ALS = Y;
+        end
+    else
+        rel_error_TR_ALS = nan;
+        time_TR_ALS = nan;
     end
         
     % Run TR-ALS-Sampled
@@ -201,7 +209,7 @@ for tr = 1:no_trials
     J = J_init;
     while true
         tic_exp = tic;
-        cores = tr_als_sampled(X, ranks, J*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'resample', true, 'verbose', verbose); 
+        cores = tr_als_sampled(X, ranks, J*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'resample', true, 'verbose', verbose, 'uniform_sampling', uniform_sampling); 
         time_TR_ALS_Sampled{tr, m} = [time_TR_ALS_Sampled{tr, m}; toc(tic_exp)];
         Y = cores_2_tensor(cores);
         rel_error_TR_ALS_Sampled{tr, m} = [rel_error_TR_ALS_Sampled{tr, m}; norm(Y(:)-X(:))/normX];
@@ -217,24 +225,29 @@ for tr = 1:no_trials
     fprintf(' Done!\n');
 
     % Run rTR-ALS
-    fprintf('\tRunning rTR-ALS for trial = %d', tr)
-    K = K_init;
-    while true
-        tic_exp = tic; 
-        cores = rtr_als(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
-        time_rTR_ALS{tr, m} = [time_rTR_ALS{tr, m}; toc(tic_exp)];
-        Y = cores_2_tensor(cores);
-        rel_error_rTR_ALS{tr, m} = [rel_error_rTR_ALS{tr, m}; norm(Y(:)-X(:))/normX];
-        if rel_error_rTR_ALS{tr, m}(end)/rel_error_TR_ALS(tr, m) < target_acc
-            break
+    if run_rTR_ALS
+        fprintf('\tRunning rTR-ALS for trial = %d', tr)
+        K = K_init;
+        while true
+            tic_exp = tic; 
+            cores = rtr_als(X, ranks, K*ones(size(sz)), 'tol', 0, 'maxiters', no_it, 'verbose', verbose);
+            time_rTR_ALS{tr, m} = [time_rTR_ALS{tr, m}; toc(tic_exp)];
+            Y = cores_2_tensor(cores);
+            rel_error_rTR_ALS{tr, m} = [rel_error_rTR_ALS{tr, m}; norm(Y(:)-X(:))/normX];
+            if rel_error_rTR_ALS{tr, m}(end)/rel_error_TR_ALS(tr, m) < target_acc
+                break
+            end
+            K = K + K_inc;
+            fprintf('.');
         end
-        K = K + K_inc;
-        fprintf('.');
+        if save_snap && tr == 1
+            Y_rTR_ALS = Y;
+        end
+        fprintf(' Done!\n');
+    else
+        rel_error_rTR_ALS = nan;
+        time_rTR_ALS = nan;
     end
-    if save_snap && tr == 1
-        Y_rTR_ALS = Y;
-    end
-    fprintf(' Done!\n');
 
     % Run TR-SVD
     if run_TR_SVD
