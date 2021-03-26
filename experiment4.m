@@ -8,13 +8,13 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "coil-reshape"; % Which dataset to use
+dataset = "cat-reshape"; % Which dataset to use
 R = 10;
 uniform_sampling = false; % Default is false
 no_it = 100;
 save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
-run_TR_ALS = false;
-run_rTR_ALS = false;
+run_TR_ALS = true;
+run_rTR_ALS = true;
 run_TR_SVD = false;
 run_TR_SVD_Rand = false;
 
@@ -86,6 +86,11 @@ else
     elseif strcmp(dataset, 'cat')
         tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
         load(tensor_path);
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'cat-reshape')
+        tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
+        load(tensor_path);
+        X = reshape(X, 16, 45, 32, 40, 13, 22);
         tensor_type = 'dense';
     elseif strcmp(dataset, 'coil') || strcmp(dataset, 'coil-reshape')
         path = "D:\data_sets\images\coil-100";
