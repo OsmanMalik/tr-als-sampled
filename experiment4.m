@@ -8,7 +8,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "pavia"; % Which dataset to use
+dataset = "pavia-reshape"; % Which dataset to use
 R = 10;
 uniform_sampling = true; % Default is false
 no_it = 100;
@@ -46,6 +46,13 @@ else
         tensor_path = "D:\data_sets\hyperspectral_imaging\PaviaU.mat";
         load(tensor_path)
         X = paviaU;
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'pavia-reshape')
+        tensor_path = "D:\data_sets\hyperspectral_imaging\PaviaU.mat";
+        load(tensor_path)
+        X = paviaU;
+        X = X(1:600, 1:320, 1:100);
+        X = reshape(X, 24,25,16,20,10,10);
         tensor_type = 'dense';
     elseif strcmp(dataset, 'dc')
         % See this post for info on loading data: https://www.mathworks.com/matlabcentral/answers/449291-how-to-display-hyperspectral-image-washington-dc
