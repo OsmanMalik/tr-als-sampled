@@ -8,7 +8,7 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "pavia-reshape"; % Which dataset to use
+dataset = "dc-reshape"; % Which dataset to use
 R = 10;
 uniform_sampling = true; % Default is false
 no_it = 100;
@@ -59,6 +59,14 @@ else
         tensor_path = "D:\data_sets\hyperspectral_imaging\dc.tif";
         data1 = imread(tensor_path);
         X = double(data1);
+        tensor_type = 'dense';
+    elseif strcmp(dataset, 'dc-reshape')
+        % See this post for info on loading data: https://www.mathworks.com/matlabcentral/answers/449291-how-to-display-hyperspectral-image-washington-dc
+        tensor_path = "D:\data_sets\hyperspectral_imaging\dc.tif";
+        data1 = imread(tensor_path);
+        X = double(data1);
+        X = X(:, 1:306, 1:190);
+        X = reshape(X, 32, 40, 18, 17, 10, 19);
         tensor_type = 'dense';
     elseif strcmp(dataset, 'bench')
         tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\bench.mat';
@@ -294,6 +302,8 @@ end
 fprintf('\n');
 
 % Save stuff
+clear X
+clear Y
 save(fname)  % Just save everything...
 % save(fname, 'NO_IT', ...
 %     'rel_error_TR_ALS', ...
