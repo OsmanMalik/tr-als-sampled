@@ -8,9 +8,9 @@
 %include_toolboxes
 
 % Settings: General experiment 
-dataset = "dc-reshape"; % Which dataset to use
+dataset = "coil-reshape"; % Which dataset to use
 R = 10;
-uniform_sampling = true; % Default is false
+uniform_sampling = false; % Default is false
 no_it = 100;
 save_snap = false; % We set this to true for the coil dataset to save intermediate images of the Red Truck to be able to show visually the difference between the decompositions. 
 run_TR_ALS = false;
@@ -78,11 +78,16 @@ else
         %    X(:,:,k) = mean(read(vid, k),3);
         %end
         tensor_type = 'dense';
+    elseif strcmp(dataset, 'bench-reshape')
+        tensor_path = 'D:\data_sets\videos\Man Sitting on a Bench\bench.mat';
+        load(tensor_path);
+        X = reshape(X, 24, 45, 32, 60, 28, 13);
+        tensor_type = 'dense';
     elseif strcmp(dataset, 'cat')
         tensor_path = 'D:\data_sets\videos\Cat\tabby_cat.mat';
         load(tensor_path);
         tensor_type = 'dense';
-    elseif strcmp(dataset, 'coil') || strcmp(dataset, 'coil reshape')
+    elseif strcmp(dataset, 'coil') || strcmp(dataset, 'coil-reshape')
         path = "D:\data_sets\images\coil-100";
         flist = dir(path);
         no_obj = 1;
@@ -99,16 +104,9 @@ else
         end
         tensor_type = 'dense';
         X = double(X);
-        if strcmp(dataset, 'coil reshape')
-            newsize = cell(16, 1);
-            for j = 1:14
-                newsize{j} = 2;
-            end
-            newsize{15} = 3;
-            newsize{16} = 72;
-        end
-        X = reshape(X, newsize{:});
-        X = permute(X, [1 8 2 9 3 10 4 11 5 12 6 13 7 14 15 16]);
+        if strcmp(dataset, 'coil-reshape')
+            X = reshape(X, 8, 16, 8, 16, 3, 8, 9);
+        end        
     elseif strcmp(dataset, 'coil compressed')
         path = "D:\data_sets\images\coil-100-downsampled\compressed_coil_100.mat";
         load(path)
