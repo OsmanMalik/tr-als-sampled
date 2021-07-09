@@ -4,7 +4,8 @@
 % proposed TR-ALS-Sampled, as well as four other methods that we compare
 % against. 
 %
-% In this experiment, we vary the rank.
+% In this experiment, we vary the rank. No results from this script were
+% used in the paper.
 
 % Settings: General experiment 
 I = 100; % Tensor sizes

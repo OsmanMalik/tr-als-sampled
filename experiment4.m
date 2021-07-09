@@ -3,7 +3,8 @@
 % The purpose of this script is to essentially repeat what we did in
 % experiment 1, but on real data.
 %
-% This script was used to generate the results on real data in the paper.
+% This script was used to generate the results in Sections 5.1.2 and 5.1.3
+% in the paper.
 
 %include_toolboxes
 

@@ -4,8 +4,8 @@
 % proposed TR-ALS-Sampled, as well as four other methods that we compare
 % against.
 %
-% This script was used to run all the synthetic data experiments in our
-% paper.
+% This script was used to run all the synthetic data experiments in Section
+% 5.1.1 in our paper.
 
 % Settings: General experiment 
 I = 100:100:500; % Tensor sizes

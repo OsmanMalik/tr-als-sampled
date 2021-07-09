@@ -1,5 +1,8 @@
-% Compute SNR
-% Formula is SNR_db = 20*log_10(|| Signal(:) ||_2 / || Epsilon(:) ||_2)
+% This script was used to compute the the approximate SNR for various
+% levels of added Gaussian noise in Figure 5 of our paper.
+%
+% The formula for SNR is 
+% SNR_db = 20*log_10(|| Signal(:) ||_2 / || Epsilon(:) ||_2)
 
 I = 100:100:500; % Tensor sizes
 N = 3; % Tensor dimensionality
@@ -19,4 +22,3 @@ for m = 1:length(I)
 end
 
 SNR
-

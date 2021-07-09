@@ -1,4 +1,7 @@
-% Compute TR-SVD ranks
+% This script was used to compute the TR-SVD ranks in required to achieve a
+% certain accuracy for TR-SVD; see Remark S9 in the supplement of our
+% paper for details.
+
 I = 100:100:500; % Tensor sizes
 N = 3; % Tensor dimensionality
 ranks = 10*ones(1, N); % Target ranks

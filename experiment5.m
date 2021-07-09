@@ -1,5 +1,8 @@
 % The purpose of this script is to demonstrate how the TR decomposition can
-% be used for rapid feature extraction in a simple classification task
+% be used for rapid feature extraction in a simple classification task.
+%
+% This script was used to run the rapid feature extraction experiments in
+% Section 5.2 of our paper.
 
 method = "tr_als";
 

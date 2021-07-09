@@ -1,4 +1,4 @@
-% Script for plotting oscillatory functions used in experiments
+% Script for making the plot in Figure 6 of our paper
 
 figure
 

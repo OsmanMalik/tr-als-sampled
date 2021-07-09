@@ -3,7 +3,7 @@
 % This experiment is meant to be for sparse real world data, for the
 % rTR-ALS method. 
 %
-% No outputs from this script were used in the paper. I may everntually
+% No outputs from this script were used in the paper. I may eventually
 % remove it entirely.
 
 % Settings

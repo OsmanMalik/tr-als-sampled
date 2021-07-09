@@ -4,7 +4,8 @@
 % proposed TR-ALS-Sampled, as well as four other methods that we compare
 % against.
 %
-% In this experiment, we vary the number of dimensions.
+% In this experiment, we vary the number of dimensions. No results from
+% this script were used in the paper.
 
 % Settings: General experiment 
 I = 5; % Tensor sizes
