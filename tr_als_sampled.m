@@ -187,8 +187,8 @@ for it = 1:maxiters
             if m ~= n
                 rescaling = rescaling ./ sqrt(sampling_probs{m}(samples(:, m)));
             end
-            rescaling = rescaling ./ sqrt(J);
         end
+        rescaling = rescaling ./ sqrt(J);
         
         % Construct sketched design matrix
         idx = [n+1:N 1:n-1]; % Order in which to multiply cores
