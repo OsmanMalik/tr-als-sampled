@@ -45,16 +45,21 @@ Implementations of the methods we compare to in our paper are available in the f
 - **tr_svd_rand.m**: This is the randomized variant of TR-SVD which we call TR-SVD-Rand in our paper.
 
 ## Requirements
-Our **tr_als_sampled.m** requires mtimesx, which is available at https://www.mathworks.com/matlabcentral/fileexchange/25977-mtimesx-fast-matrix-multiply-with-multi-dimensional-support. We also provide a copy of this software in the folder help_functions/mtimesx/ of this repo. Please see the license file in that folder for license details on mtimesx.
+This code requires Matlab version R2020b or later; see note below.
 
 Portions of this code also require the following:
+- The Statistics and Machine Learning Toolbox which is an official Matlab toolbox from Mathworks.
 - Tensor Toolbox for MATLAB. It is available at https://www.tensortoolbox.org/ and at https://gitlab.com/tensors/tensor_toolbox.
 - The function **normTR.m** for efficient computation of the norm of tensors in TR format, available at https://github.com/oscarmickelin/tensor-ring-decomposition.
 
-## Installation
-How to install mtimesx depends on if you are on a Windows or Linux machine. The script **compile_script.m** in help_functions/mtimesx has code for compiling on a Windows machine. The comments in that script also contain pointers for compiling on a Linux machine.
+Previous versions of this repo required [**mtimesx**](https://www.mathworks.com/matlabcentral/fileexchange/25977-mtimesx-fast-matrix-multiply-with-multi-dimensional-support) for doing batched matrix multiplication.
+Since Matlab introduced its own function [**pagemtimes**](https://www.mathworks.com/help/matlab/ref/pagemtimes.html) for doing batched matrix multiplication in version R2020b we have now switched over to using **pagemtimes** instead of **mtimesx**.
+In addition to being easier to use since it does not require compilation, **pagemtimes** also usually ran faster than **mtimesx** in some tests we did.
+The last version of this repo that did use **mtimesx** is the latest version committed on Oct 12, 2021.
 
-The other dependencies listed under Requirements should require no installation. The rest of the code in this repo should work as is. We ran this code in Matlab 2017a, so this version and newer should work fine.
+## Installation
+The Statistics and Machine Learning Toolbox can be installed via Matlab's Add-Ons interface.
+The remaining dependencies just need to be downloaded and made accessible from within Matlab, e.g. via the Set Path function.
 
 ## Author contact information
 Please feel free to contact me at any time if you have any questions or would like to provide feedback on this code or on our paper. I can be reached at osman.malik@colorado.edu.

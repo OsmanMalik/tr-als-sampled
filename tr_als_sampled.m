@@ -50,11 +50,6 @@ function [cores, varargout] = tr_als_sampled(X, ranks, embedding_dims, varargin)
 %controls how much Tikhonov regularization is added in LS problems. We
 %found that this helped avoid ill-conditioning on certain datasets.
 
-%% Add relevant paths
-
-addpath('help_functions\mtimesx\mtimesx_20110223')
-mtimesx('SPEED');
-
 %% Handle inputs 
 
 % Optional inputs
@@ -195,7 +190,7 @@ for it = 1:maxiters
         G_sketch = permute(core_samples{idx(1)}, [1 3 2]);
         for m = 2:N-1
             permuted_core = permute(core_samples{idx(m)}, [1 3 2]);
-            G_sketch = mtimesx(G_sketch, permuted_core);
+            G_sketch = pagemtimes(G_sketch, permuted_core);
         end
         G_sketch = permute(G_sketch, [3 2 1]);
         G_sketch = reshape(G_sketch, J, numel(G_sketch)/J);
