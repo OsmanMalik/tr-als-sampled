@@ -4,51 +4,58 @@ function [cores, varargout] = tr_als_sampled(X, ranks, embedding_dims, varargin)
 %For loading from file: It is assumed that the tensor is stored in a
 %variable Y in the mat file.
 %
-%cores = tr_als(X, ranks, embedding_dims) computes a tensor ring (TR) 
-%decomposition of the input N-dimensional array X by sampling the LS
+%cores = tr_als_sampled(X, ranks, embedding_dims) computes a tensor ring
+%(TR) decomposition of the input N-dimensional array X by sampling the LS
 %problems using sketch sizes for each dimension given in embedding_dims.
 %Ranks is a length-N vector containing the target ranks. The output cores
 %is a cell containing the N cores tensors, each represented as a 3-way
 %array.
 %
-%cores = tr_als(___, 'conv_crit', conv_crit) is an optional parameter used
-%to control which convergence criterion is used. Set to either 'relative
-%error' or 'norm' to terminate when change in relative error or norm of
-%TR-tensor is below the tolerance in tol. Default is that no convergence
-%criterion is used.
+%cores = tr_als_sampled(___, 'conv_crit', conv_crit) is an optional
+%parameter used to control which convergence criterion is used. Set to
+%either 'relative error' or 'norm' to terminate when change in relative
+%error or norm of TR-tensor is below the tolerance in tol. Default is that
+%no convergence criterion is used.
 %
-%cores = tr_als(___, 'tol', tol) is an optional argument that controls the
-%termination tolerance. If the change in the relative error is less than
-%tol at the conclusion of a main loop iteration, the algorithm terminates.
-%Default is 1e-3.
+%cores = tr_als_sampled(___, 'tol', tol) is an optional argument that
+%controls the termination tolerance. If the change in the relative error is
+%less than tol at the conclusion of a main loop iteration, the algorithm
+%terminates. Default is 1e-3.
 %
-%cores = tr_als(___, 'maxiters', maxiters) is an optional argument that
-%controls the maximum number of main loop iterations. The default is 50.
+%cores = tr_als_sampled(___, 'maxiters', maxiters) is an optional argument
+%that controls the maximum number of main loop iterations. The default is
+%50. 
 %
-%cores = tr_als(___, 'resample', resample) can be used to avoid resampling
-%those factor tensor that haven't been updated. This means that theoretical
-%guarantees no longer formally apply for the LS problems. We always run
-%this with the default of true, which means that full resampling is always
-%done.
+%cores = tr_als_sampled(___, 'resample', resample) can be used to avoid
+%resampling those factor tensor that haven't been updated. This means that
+%theoretical guarantees no longer formally apply for the LS problems. We
+%always run this with the default of true, which means that full resampling
+%is always done.
 %
-%cores = tr_als(___, 'verbose', verbose) is an optional argument that
-%controls the amount of information printed to the terminal during
+%cores = tr_als_sampled(___, 'verbose', verbose) is an optional argument
+%that controls the amount of information printed to the terminal during
 %execution. Setting verbose to true will result in more print out. Default
 %is false.
 %
-%cores = tr_als(___, 'no_mat_inc', no_mat_inc) is used to control how
-%input tensors read from file are sliced up to save RAM. We never use this
-%in our experiments, and I may eventually remove this functionality.
+%cores = tr_als_sampled(___, 'no_mat_inc', no_mat_inc) is used to control
+%how input tensors read from file are sliced up to save RAM. We never use
+%this in our experiments, and I may eventually remove this functionality.
 %
-%cores = tr_als(___, 'breakup', breakup) is an optional length-N vector
-%input that can be used to break up the LS problems with multiple right
-%hand sides that come up into pieces so that not all problems are solved at
-%the same time. This is useful when a tensor dimension is particularly
-%large.
+%cores = tr_als_sampled(___, 'breakup', breakup) is an optional length-N
+%vector input that can be used to break up the LS problems with multiple
+%right hand sides that come up into pieces so that not all problems are
+%solved at the same time. This is useful when a tensor dimension is
+%particularly large.
 %
-%cores = tr_als(___, 'alpha', alpha) alpha is an optional parameter which
-%controls how much Tikhonov regularization is added in LS problems. We
-%found that this helped avoid ill-conditioning on certain datasets.
+%cores = tr_als_sampled(___, 'alpha', alpha) alpha is an optional parameter
+%which controls how much Tikhonov regularization is added in LS problems.
+%We found that this helped avoid ill-conditioning on certain datasets.
+%
+%cores = tr_als_sampled(___, 'init', init) can be used to set how the core
+%tensors are initialized. If init is "randn" (the default), then all
+%entries of the cores drawn independently from a standard normal
+%distribution. init can also be a cell array containing initializations for
+%the factor matrices.
 
 %% Handle inputs 
 
@@ -63,6 +70,7 @@ addParameter(params, 'no_mat_inc', false);
 addParameter(params, 'breakup', false);
 addParameter(params, 'alpha', 0);
 addParameter(params, 'uniform_sampling', false);
+addParameter(params, 'init', "randn")
 parse(params, varargin{:});
 
 conv_crit = params.Results.conv_crit;
@@ -74,6 +82,7 @@ no_mat_inc = params.Results.no_mat_inc;
 breakup = params.Results.breakup;
 alpha = params.Results.alpha;
 uniform_sampling = params.Results.uniform_sampling;
+init = params.Results.init;
 
 % Check if X is path to mat file on disk
 %   X_mat_flag is a flag that keeps track of if X is an array or path to
@@ -107,7 +116,13 @@ else
     sz = size(X);
     N = length(sz);
 end
-cores = initialize_cores(sz, ranks);
+
+% Appropriately initialize cores
+if iscell(init)
+    cores = init;    
+elseif strcmp(init, "randn")
+    cores = initialize_cores(sz, ranks);
+end
 
 sampling_probs = cell(1, N);
 for n = 2:N

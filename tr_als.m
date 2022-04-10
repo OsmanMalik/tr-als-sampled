@@ -19,6 +19,12 @@ function [cores, varargout] = tr_als(X, ranks, varargin)
 %execution. Setting verbose to true will result in more print out. Default
 %is false.
 %
+%cores = tr_als(___, 'init', init) can be used to set how the core
+%tensors are initialized. If init is "randn" (the default), then all
+%entries of the cores drawn independently from a standard normal
+%distribution. init can also be a cell array containing initializations for
+%the factor matrices.
+%
 %This algorithm is based on Alg. 2 in paper by
 %Q. Zhao, G. Zhou, S. Xie, L. Zhang, A. Cichocki. "Tensor ring
 %decomposition". arXiv:1606.05535, 2016.
@@ -30,17 +36,25 @@ addParameter(params, 'conv_crit', 'none');
 addParameter(params, 'tol', 1e-3, @isscalar);
 addParameter(params, 'maxiters', 50, @(x) isscalar(x) & x > 0);
 addParameter(params, 'verbose', false, @isscalar);
+addParameter(params, 'init', "randn")
 parse(params, varargin{:});
 
 conv_crit = params.Results.conv_crit;
 tol = params.Results.tol;
 maxiters = params.Results.maxiters;
 verbose = params.Results.verbose;
+init = params.Results.init;
 
 %% Initialize cores
 
 sz = size(X);
-cores = initialize_cores(sz, ranks);
+
+% Appropriately initialize cores
+if iscell(init)
+    cores = init;    
+elseif strcmp(init, "randn")
+    cores = initialize_cores(sz, ranks);
+end
 
 if nargout > 1 && tol > 0 && (strcmp(conv_crit, 'relative error') || strcmp(conv_crit, 'norm'))
     conv_vec = zeros(1, maxiters);
