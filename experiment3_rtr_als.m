@@ -154,5 +154,5 @@ toc_total = toc_compress + toc_decompose + toc_uncompress;
 
 %% Save stuff
 
-fname = "experiment3_rtr_als_" + dataset + "_R" + num2str(R) + "_J" + num2str(J);
+fname = "experiment3_rtr_als_" + dataset + "_R" + num2str(R);
 save(fname)
