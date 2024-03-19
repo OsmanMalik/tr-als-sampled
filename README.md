@@ -5,6 +5,16 @@ This repo provides code used in the experiments of our paper
 
 Our paper is available in the [Proceedings of Machine Learning Research](http://proceedings.mlr.press/v139/malik21b.html).
 
+An implementation of our TR-ALS-Sampled algorithm is also available for Python in [TensorLy](https://github.com/tensorly/tensorly/blob/main/tensorly/decomposition/_tr_als.py) via
+```
+tensorly.decomposition.tensor_ring_als_sampled
+```
+and 
+```
+tensorly.decomposition.TensorRingALSSampled
+```
+
+
 ## Referencing this code
 If you use our code in any of your own work, please reference our paper:
 
